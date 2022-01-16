@@ -1,13 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
-from onetime import generateKey, encrypt, decrypt
+import random
 import hashlib
 
 root = tk.Tk()
 root.minsize(300,600)
 root.maxsize(300,600)
-root.title('One Time Pad')
+root.title('One-Time Encryption')
+icon = tk.PhotoImage("icon.ico")
+root.iconbitmap(icon)
 
 def popUp(msg:str):
     win = tk.Toplevel()
@@ -24,7 +26,16 @@ def popUp(msg:str):
 def genKey():
     try:
         fPath = filedialog.askopenfilename(initialdir="/", title="Select a File to Generate a Key for")
-        generateKey(fPath)
+        f = open(fPath, 'rb')
+        file = f.read()
+        f.close()
+        key = random.randbytes(len(file))
+        print(key)
+        print(len(file))
+        print(len(key))
+        f = open(fPath + '.key', 'wb')
+        f.write(key)
+        f.close()
         popUp("Key Created Succesfully!")
     except:
         popUp("Something went wrong...")
@@ -33,8 +44,29 @@ def enc():
     try:
         fPath = filedialog.askopenfilename(initialdir="/", title="Select a File to Encrypt")
         kPath = filedialog.askopenfilename(initialdir="/", title="Select a Key to Use")
-        encrypt(kPath,fPath)
-        popUp("Encryption Done!")
+        f = open(fPath, 'rb')
+        file = f.read()
+        f.close()
+
+        k = open(kPath, 'rb')
+        key = k.read()
+        k.close
+
+        flen = len(file)
+
+        if len(file) == len(key):
+            file = bytearray(file)
+            key = bytearray(key)
+            for i, f in enumerate(file):
+                file[i] = f^key[i]
+
+            fenc = open(fPath + ".enc", 'wb')
+            fenc.write(file)
+            fenc.close()
+            popUp("Encryption Done!")
+        else:
+            popUp("Key not compatible.")
+        
     except:
         popUp("Something went wrong...")
 
@@ -42,8 +74,27 @@ def dec():
     try:
         fPath = filedialog.askopenfilename(initialdir="/", title="Select a File to Decrypt")
         kPath = filedialog.askopenfilename(initialdir="/", title="Select a Key to Use")
-        decrypt(kPath,fPath)
-        popUp("Decryption Done!")
+        f = open(fPath, 'rb')
+        file = f.read()
+        f.close()
+
+        k = open(kPath, 'rb')
+        key = k.read()
+        k.close
+
+        if len(file) == len(key):
+            file = bytearray(file)
+            key = bytearray(key)
+            for i, f in enumerate(file):
+                file[i] = f^key[i]
+
+            fenc = open(fPath.replace(".enc", ""), 'wb')
+            fenc.write(file)
+            fenc.close()
+            popUp("Decryption Done!")
+        else:
+            popUp("Key not compatible.")
+        
     except:
         popUp("Something went wrong...")
 
@@ -87,12 +138,12 @@ def valInt():
 canvas = tk.Canvas(root, width=300, height=600, bg="#f0f0f0")
 canvas.pack()
 
-mainLabel = tk.Label(root, text="One Time Pad", bg="#576574", fg="#ffffff")
+mainLabel = tk.Label(root, text="One-Time Encryption", bg="#252a35", fg="#f0f0f0")
 mainLabel.place(relheight=0.075, relwidth=1, relx=0, rely=0)
 
-img = tk.PhotoImage(file="github.png")
+img = tk.PhotoImage(file="icon.png")
 qr = tk.Label(root, image=img)
-qr.place(relwidth=0.8, relheight=0.4 , rely=0.09, relx=0.1)
+qr.place(relwidth=0.9, relheight=0.45 , rely=0.075, relx=0.05)
 
 genKeyBtn = ttk.Button(root, text="Generate New Key", command=genKey)
 genKeyBtn.place(relwidth=0.8, relheight=0.075, rely=0.5, relx=0.1)
@@ -109,7 +160,7 @@ chsGenBtn.place(relwidth=0.35, relheight=0.1, rely=0.8, relx=0.1)
 intValBtn = ttk.Button(root, text="Validate\nIntegrity", command=valInt)
 intValBtn.place(relwidth=0.35, relheight=0.1, rely=0.8, relx=0.55)
 
-stdLabel = tk.Label(root, text="by dekaottoman", bg="#576574", fg="#ffffff")
+stdLabel = tk.Label(root, text="by dekaottoman", bg="#252a35", fg="#f0f0f0")
 stdLabel.place(relheight=0.075, relwidth=1, relx=0, rely=0.925)
 
 root.mainloop()
